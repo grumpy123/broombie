@@ -1,30 +1,44 @@
 """Broombie is an over-helpful, hyper-functional language.
 
-Everything in Broombie is a function, including operators.
+The main design goal of the language is to limit the use of special characters the minimum. Most special characters
+require some key combination to be typed, and I hate key combinations :)
 
-Language elements are separated by whitespace.
+The second design goal is to have minimum syntax. No semi-colons at the end of statements, no braces around the
+function body, etc. No parenthesis for function call.
 
 Functions are evaluated in left-first order
 1 + 2 * 2
 6
 
-todo: Eval operator forces the next operator to be evaluated as sub-expression
-= 1 + = 2 * 2
-5
-
-todo: support operator precedence?
+todo: support operator precedence
 
 """
 from .parser import parse
 from .tokenizer import tokenize
 
 
-def evaluate(roots):
-    last = None
-    for r in roots:
-        last = r.evaluate()
-    return last
+class Broombie:
+    def __init__(self):
+        self.truth = {}
+        self.latest = None
+
+    def evaluate(self, roots):
+        last = None
+        for r in roots:
+            last = r.evaluate(self.truth)
+        return last
+
+    def _run_line(self, line):
+        if not line.strip():
+            return
+        self.latest = self.evaluate(parse(tokenize(line)))
+
+    def run(self, text):
+        for line in text.splitlines():
+            self._run_line(line)
+        return self.latest
 
 
 def run(text):
-    return evaluate(parse(tokenize(text)))
+    repl = Broombie()
+    return repl.run(text)

@@ -21,6 +21,9 @@ class Ast:
     def is_complete(self):
         return not self.needs_left() and not self.needs_right()
 
+    def evaluate(self, truth):
+        raise NotImplementedError()
+
 
 class BinaryOperator(Ast):
     num_left_children = 1
@@ -28,23 +31,29 @@ class BinaryOperator(Ast):
 
 
 class AddOperator(BinaryOperator):
-    def evaluate(self):
-        return self.left_children[0].evaluate() + self.right_children[0].evaluate()
+    def evaluate(self, truth):
+        return self.left_children[0].evaluate(truth) + self.right_children[0].evaluate(truth)
 
 
 class SubtractOperator(BinaryOperator):
-    def evaluate(self):
-        return self.left_children[0].evaluate() - self.right_children[0].evaluate()
+    def evaluate(self, truth):
+        return self.left_children[0].evaluate(truth) - self.right_children[0].evaluate(truth)
 
 
 class MultiplyOperator(BinaryOperator):
-    def evaluate(self):
-        return self.left_children[0].evaluate() * self.right_children[0].evaluate()
+    def evaluate(self, truth):
+        return self.left_children[0].evaluate(truth) * self.right_children[0].evaluate(truth)
 
 
 class DivideOperator(BinaryOperator):
-    def evaluate(self):
-        return self.left_children[0].evaluate() // self.right_children[0].evaluate()
+    def evaluate(self, truth):
+        return self.left_children[0].evaluate(truth) // self.right_children[0].evaluate(truth)
+
+
+class AssignOperator(BinaryOperator):
+    def evaluate(self, truth):
+        assert isinstance(self.left_children[0], Object)
+        truth[self.left_children[0].name] = self.right_children[0].evaluate(truth)
 
 
 class Number(Ast):
@@ -55,8 +64,20 @@ class Number(Ast):
     def is_complete(self):
         return True
 
-    def evaluate(self):
+    def evaluate(self, truth):
         return self.value
+
+
+class Object(Ast):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    def is_complete(self):
+        return True
+
+    def evaluate(self, truth):
+        return truth[self.name]
 
 
 def build_ast(nodes):

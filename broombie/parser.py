@@ -1,4 +1,5 @@
-from .ast import build_ast, AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, Number
+from .ast import build_ast, AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, \
+    Object
 
 
 class AstParser:
@@ -37,6 +38,11 @@ class DivideOperatorParser(KeywordParser):
         super().__init__("/", DivideOperator)
 
 
+class AssignOperatorParser(KeywordParser):
+    def __init__(self):
+        super().__init__("=", AssignOperator)
+
+
 class NumberParser(AstParser):
     def try_parse(self, token):
         try:
@@ -46,8 +52,15 @@ class NumberParser(AstParser):
             return None
 
 
+class ObjectParser(AstParser):
+    def try_parse(self, token):
+        if token.isalpha():
+            return Object(token)
+        return None
+
+
 elements = [AddOperatorParser(), SubtractOperatorParser(), MultiplyOperatorParser(), DivideOperatorParser(),
-            NumberParser()]
+            AssignOperatorParser(), NumberParser(), ObjectParser()]
 
 
 def parse_token(t):

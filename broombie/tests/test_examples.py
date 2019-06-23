@@ -21,5 +21,13 @@ def test_nested_expressions():
     _run(3, "3 + 4 / 2")
 
 
+def test_consts():
+    _run(5, """
+        a = 2
+        b = 3
+        a + b
+    """)
+
+
 def _run(result, program):
     assert run(cleandoc(program)) == result
