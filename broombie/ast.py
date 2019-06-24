@@ -1,105 +1,99 @@
 class Ast:
-    num_left_children = 0
-    num_right_children = 0
+    precedence = 0
 
-    def __init__(self):
-        self.left_children = []
-        self.right_children = []
-
-    def needs_left(self):
-        return len(self.left_children) < self.num_left_children
-
-    def needs_right(self):
-        return len(self.right_children) < self.num_right_children
-
-    def add_left(self, n):
-        self.left_children.append(n)
-
-    def add_right(self, n):
-        self.right_children.append(n)
-
-    def is_complete(self):
-        return not self.needs_left() and not self.needs_right()
+    def complete(self, lnodes, rnodes):
+        pass
 
     def evaluate(self, truth):
         raise NotImplementedError()
 
 
 class BinaryOperator(Ast):
-    num_left_children = 1
-    num_right_children = 1
+    def __init__(self):
+        self.left_child = None
+        self.right_child = None
+
+    def complete(self, lnodes, rnodes):
+        self.left_child = lnodes.pop()
+        self.right_child = rnodes.pop()
 
 
 class AddOperator(BinaryOperator):
+    precedence = 6
+
     def evaluate(self, truth):
-        return self.left_children[0].evaluate(truth) + self.right_children[0].evaluate(truth)
+        return self.left_child.evaluate(truth) + self.right_child.evaluate(truth)
 
 
 class SubtractOperator(BinaryOperator):
+    precedence = 6
+
     def evaluate(self, truth):
-        return self.left_children[0].evaluate(truth) - self.right_children[0].evaluate(truth)
+        return self.left_child.evaluate(truth) - self.right_child.evaluate(truth)
 
 
 class MultiplyOperator(BinaryOperator):
+    precedence = 3
+
     def evaluate(self, truth):
-        return self.left_children[0].evaluate(truth) * self.right_children[0].evaluate(truth)
+        return self.left_child.evaluate(truth) * self.right_child.evaluate(truth)
 
 
 class DivideOperator(BinaryOperator):
+    precedence = 3
+
     def evaluate(self, truth):
-        return self.left_children[0].evaluate(truth) // self.right_children[0].evaluate(truth)
+        return self.left_child.evaluate(truth) // self.right_child.evaluate(truth)
 
 
 class AssignOperator(BinaryOperator):
+    precedence = 10
+
     def evaluate(self, truth):
-        assert isinstance(self.left_children[0], Object)
-        truth[self.left_children[0].name] = self.right_children[0].evaluate(truth)
+        assert isinstance(self.left_child, Object)
+        truth[self.left_child.name] = self.right_child
 
 
 class Number(Ast):
+    precedence = 0
+
     def __init__(self, value):
         super().__init__()
         self.value = value
-
-    def is_complete(self):
-        return True
 
     def evaluate(self, truth):
         return self.value
 
 
 class Object(Ast):
+    precedence = 1
+
     def __init__(self, name):
         super().__init__()
         self.name = name
 
-    def is_complete(self):
-        return True
-
     def evaluate(self, truth):
-        return truth[self.name]
+        return truth[self.name].evaluate(truth)
 
 
 def build_ast(nodes):
     """Converts list of typed nodes into AST.
     """
     # todo: error handling
-    lnodes = []
-    rnodes = list(reversed(nodes))
-    while rnodes:
-        n = rnodes.pop()
-        if n.is_complete():
+    TERMINATOR = 1000
+    lnodes = nodes
+    next_precedence = 0
+    while next_precedence < TERMINATOR:
+        precedence = next_precedence
+        next_precedence = TERMINATOR
+        rnodes = list(reversed(lnodes))
+        lnodes = []
+        while rnodes:
+            n = rnodes.pop()
+            if n.precedence == precedence:
+                n.complete(lnodes, rnodes)
+            if precedence < n.precedence < next_precedence:
+                next_precedence = n.precedence
             lnodes.append(n)
-            continue
-        while n.needs_left():
-            n.add_left(lnodes.pop())
-        while n.needs_right():
-            n.add_right(get_right_child(rnodes))
-        lnodes.append(n)
 
-    # todo: Validate no leftover nodes
     return lnodes
-
-
-def get_right_child(rnodes):
-    return rnodes.pop()

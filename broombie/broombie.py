@@ -6,9 +6,11 @@ require some key combination to be typed, and I hate key combinations :)
 The second design goal is to have minimum syntax. No semi-colons at the end of statements, no braces around the
 function body, etc. No parenthesis for function call.
 
-Functions are evaluated in left-first order
+Functions are evaluated in the classic order
 1 + 2 * 2
-6
+5
+
+There will be something in the syntax to differentiate between function call and function reference.
 
 todo: support operator precedence
 

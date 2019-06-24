@@ -17,8 +17,8 @@ def test_basic_expressions():
 def test_nested_expressions():
     _run(3, "1 + 1 + 1")
     _run(1, "3 - 1 - 1")
-    _run(10, "2 * 3 + 1 - 2 * 2")
-    _run(3, "3 + 4 / 2")
+    _run(3, "2 * 3 + 1 - 2 * 2")
+    _run(5, "3 + 4 / 2")
 
 
 def test_consts():
