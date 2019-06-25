@@ -1,4 +1,4 @@
-from .ast import build_ast, AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, \
+from .ast import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, \
     Object
 
 
@@ -73,7 +73,6 @@ def parse_token(t):
 
 
 def parse(tokens):
-    nodes = [
+    return [
         parse_token(t) for t in tokens
     ]
-    return build_ast(nodes)

@@ -15,6 +15,7 @@ There will be something in the syntax to differentiate between function call and
 todo: support operator precedence
 
 """
+from .ast import build_ast
 from .parser import parse
 from .tokenizer import tokenize
 
@@ -24,16 +25,13 @@ class Broombie:
         self.truth = {}
         self.latest = None
 
-    def evaluate(self, roots):
-        last = None
-        for r in roots:
-            last = r.evaluate(self.truth)
-        return last
+    def evaluate(self, statement):
+        return statement.evaluate(self.truth)
 
     def _run_line(self, line):
         if not line.strip():
             return
-        self.latest = self.evaluate(parse(tokenize(line)))
+        self.latest = self.evaluate(build_ast(parse(tokenize(line)), self.truth))
 
     def run(self, text):
         for line in text.splitlines():

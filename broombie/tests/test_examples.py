@@ -29,5 +29,17 @@ def test_consts():
     """)
 
 
+def test_functions():
+    _run(4, """
+        f a = 2 * a
+        f 2
+    """)
+    _run(10, """
+        f a = 2 * a
+        g b = b + 1
+        f 2 + g 5
+    """)
+
+
 def _run(result, program):
     assert run(cleandoc(program)) == result
