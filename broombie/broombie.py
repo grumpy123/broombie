@@ -31,7 +31,9 @@ class Broombie:
     def _run_line(self, line):
         if not line.strip():
             return
-        self.latest = self.evaluate(build_ast(parse(tokenize(line)), self.truth))
+        nodes = parse(tokenize(line))
+        ast = build_ast(nodes, self.truth)
+        self.latest = self.evaluate(ast)
 
     def run(self, text):
         for line in text.splitlines():

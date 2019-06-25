@@ -1,3 +1,15 @@
+def q(obj):
+    if obj is None:
+        return "?"
+    return str(obj)
+
+
+def q_arr_str(arr_str):
+    if arr_str is None:
+        return "?"
+    return " ".join(arr_str)
+
+
 class Ast:
     precedence = 0
 
@@ -7,8 +19,13 @@ class Ast:
     def evaluate(self, truth):
         raise NotImplementedError()
 
+    def __repr__(self):
+        return "<{cls}:{self}>".format(cls=type(self).__name__, self=q(self))
+
 
 class BinaryOperator(Ast):
+    symbol = None
+
     def __init__(self):
         self.left_child = None
         self.right_child = None
@@ -17,9 +34,14 @@ class BinaryOperator(Ast):
         self.left_child = lnodes.pop()
         self.right_child = rnodes.pop()
 
+    def __str__(self):
+        return "({left} {symbol} {right})".format(left=q(self.left_child), symbol=q(self.symbol),
+                                                  right=q(self.right_child))
+
 
 class AddOperator(BinaryOperator):
     precedence = 6
+    symbol = "+"
 
     def evaluate(self, truth):
         return self.left_child.evaluate(truth) + self.right_child.evaluate(truth)
@@ -27,6 +49,7 @@ class AddOperator(BinaryOperator):
 
 class SubtractOperator(BinaryOperator):
     precedence = 6
+    symbol = "-"
 
     def evaluate(self, truth):
         return self.left_child.evaluate(truth) - self.right_child.evaluate(truth)
@@ -34,6 +57,7 @@ class SubtractOperator(BinaryOperator):
 
 class MultiplyOperator(BinaryOperator):
     precedence = 3
+    symbol = "*"
 
     def evaluate(self, truth):
         return self.left_child.evaluate(truth) * self.right_child.evaluate(truth)
@@ -41,6 +65,7 @@ class MultiplyOperator(BinaryOperator):
 
 class DivideOperator(BinaryOperator):
     precedence = 3
+    symbol = "/"
 
     def evaluate(self, truth):
         return self.left_child.evaluate(truth) // self.right_child.evaluate(truth)
@@ -48,6 +73,12 @@ class DivideOperator(BinaryOperator):
 
 class AssignOperator(Ast):
     precedence = 10
+
+    def __init__(self):
+        super().__init__()
+        self.name = None
+        self.args = None
+        self.func = None
 
     def complete(self, truth, lnodes, rnodes):
         assert all([isinstance(n, Object) for n in lnodes])
@@ -59,6 +90,9 @@ class AssignOperator(Ast):
     def evaluate(self, truth):
         truth[self.name] = self.func
 
+    def __str__(self):
+        return "{name} := {args} -> {func}".format(name=q(self.name), args=q_arr_str(self.args), func=q(self.func))
+
 
 class Number(Ast):
     precedence = 0
@@ -69,6 +103,9 @@ class Number(Ast):
 
     def evaluate(self, truth):
         return self.value
+
+    def __str__(self):
+        return str(self.value)
 
 
 class Object(Ast):
@@ -91,6 +128,12 @@ class Object(Ast):
         self.func = truth[self.name]
         return self.func.evaluate(truth)
 
+    def __str__(self):
+        if self.func:
+            return "{name} {func}".format(name=q(self.name), func=q(self.func))
+        else:
+            return self.name
+
 
 class Function(Ast):
     def __init__(self, name, args, body):
@@ -101,6 +144,10 @@ class Function(Ast):
 
     def evaluate(self, truth):
         return self.body.evaluate(truth)
+
+    def __str__(self):
+        args_str = "".join([" " + a for a in self.args])
+        return "{name}{args} = {body}".format(name=q(self.name), args=q(args_str), body=q(self.body))
 
 
 def build_ast(nodes, truth):

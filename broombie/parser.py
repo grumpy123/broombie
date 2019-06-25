@@ -1,5 +1,4 @@
-from .ast import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, \
-    Object
+from .ast import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, Object
 
 
 class AstParser:
