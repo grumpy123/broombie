@@ -35,9 +35,14 @@ def test_functions():
         f 2
     """)
     _run(10, """
-        f a = 2 * a
-        g b = b + 1
+        f x = 2 * x
+        g x = x + 1
         f 2 + g 5
+    """)
+    _run(7, """
+        f x = 2 * x
+        g x = f 1 + x
+        f 2 + g 1
     """)
 
 

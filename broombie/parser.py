@@ -1,4 +1,5 @@
-from .ast import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, Object
+from .ast import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, RefPlaceholder
+from .errors import BroombieParseError
 
 
 class AstParser:
@@ -51,15 +52,15 @@ class NumberParser(AstParser):
             return None
 
 
-class ObjectParser(AstParser):
+class RefParser(AstParser):
     def try_parse(self, token):
         if token.isalpha():
-            return Object(token)
+            return RefPlaceholder(token)
         return None
 
 
 elements = [AddOperatorParser(), SubtractOperatorParser(), MultiplyOperatorParser(), DivideOperatorParser(),
-            AssignOperatorParser(), NumberParser(), ObjectParser()]
+            AssignOperatorParser(), NumberParser(), RefParser()]
 
 
 def parse_token(t):
@@ -68,10 +69,8 @@ def parse_token(t):
         if node:
             return node
 
-    raise ValueError("Don't know how to parse '{t}'".format(t=t))
+    raise BroombieParseError(t)
 
 
 def parse(tokens):
-    return [
-        parse_token(t) for t in tokens
-    ]
+    return [parse_token(t) for t in tokens]

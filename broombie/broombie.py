@@ -18,11 +18,12 @@ todo: support operator precedence
 from .ast import build_ast
 from .parser import parse
 from .tokenizer import tokenize
+from .truth import Truth
 
 
 class Broombie:
     def __init__(self):
-        self.truth = {}
+        self.truth = Truth()
         self.latest = None
 
     def evaluate(self, statement):

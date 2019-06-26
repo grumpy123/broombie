@@ -1,3 +1,7 @@
+from .errors import BroombieInternalError
+from .truth import Truth
+
+
 def q(obj):
     if obj is None:
         return "?"
@@ -11,10 +15,12 @@ def q_arr_str(arr_str):
 
 
 class Ast:
+    """AST node base class."""
     precedence = 0
 
-    def complete(self, truth, lnodes, rnodes):
-        pass
+    def build(self, truth, lnodes, rnodes):
+        """Called during AST building phase to build the AST subtree under this node."""
+        return self
 
     def evaluate(self, truth):
         raise NotImplementedError()
@@ -24,15 +30,17 @@ class Ast:
 
 
 class BinaryOperator(Ast):
+    """Base class for all binary operators."""
     symbol = None
 
     def __init__(self):
         self.left_child = None
         self.right_child = None
 
-    def complete(self, truth, lnodes, rnodes):
+    def build(self, truth, lnodes, rnodes):
         self.left_child = lnodes.pop()
         self.right_child = rnodes.pop()
+        return self
 
     def __str__(self):
         return "({left} {symbol} {right})".format(left=q(self.left_child), symbol=q(self.symbol),
@@ -71,29 +79,6 @@ class DivideOperator(BinaryOperator):
         return self.left_child.evaluate(truth) // self.right_child.evaluate(truth)
 
 
-class AssignOperator(Ast):
-    precedence = 10
-
-    def __init__(self):
-        super().__init__()
-        self.name = None
-        self.args = None
-        self.func = None
-
-    def complete(self, truth, lnodes, rnodes):
-        assert all([isinstance(n, Object) for n in lnodes])
-        self.name = lnodes[0].name
-        self.args = [n.name for n in lnodes[1:]]
-        lnodes.clear()
-        self.func = Function(self.name, self.args, rnodes.pop())
-
-    def evaluate(self, truth):
-        truth[self.name] = self.func
-
-    def __str__(self):
-        return "{name} := {args} -> {func}".format(name=q(self.name), args=q_arr_str(self.args), func=q(self.func))
-
-
 class Number(Ast):
     precedence = 0
 
@@ -108,46 +93,107 @@ class Number(Ast):
         return str(self.value)
 
 
-class Object(Ast):
+class RefPlaceholder(Ast):
     precedence = 1
 
     def __init__(self, name):
         super().__init__()
         self.name = name
-        self.func = None
 
-    def complete(self, truth, lnodes, rnodes):
+    def build(self, truth, lnodes, rnodes):
         if self.name not in truth:
             # l-value, nothing to do
-            return
-        self.func = truth[self.name]
-        for a in self.func.args:
-            truth[a] = rnodes.pop()
+            return NameRef(self.name)
+
+        func = truth[self.name]
+        args = {}
+        for a in func.arg_names:
+            args[a] = rnodes.pop()
+        return FunctionCall(self.name, func, args)
 
     def evaluate(self, truth):
-        self.func = truth[self.name]
-        return self.func.evaluate(truth)
+        raise BroombieInternalError("Placeholder object is not (expected to be) callable.")
 
     def __str__(self):
-        if self.func:
-            return "{name} {func}".format(name=q(self.name), func=q(self.func))
-        else:
-            return self.name
+        return self.name
+
+
+class NameRef(Ast):
+    precedence = 1
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    def evaluate(self, truth):
+        return truth[self.name].evaluate(truth)
+
+    def __str__(self):
+        return self.name
 
 
 class Function(Ast):
-    def __init__(self, name, args, body):
+    def __init__(self, name, arg_names, body):
         super().__init__()
         self.name = name
-        self.args = args
+        self.arg_names = arg_names
         self.body = body
 
     def evaluate(self, truth):
+        """
+        :param truth: Truth object containing values for all args in arg_names
+        :return:
+        """
         return self.body.evaluate(truth)
 
     def __str__(self):
-        args_str = "".join([" " + a for a in self.args])
+        args_str = "".join([" " + a for a in self.arg_names])
         return "{name}{args} = {body}".format(name=q(self.name), args=q(args_str), body=q(self.body))
+
+
+class FunctionCall(Ast):
+    precedence = 1
+
+    def __init__(self, name, func, args):
+        super().__init__()
+        self.name = name
+        self.func = func
+        self.args = args
+
+    def evaluate(self, truth):
+        local_truth = Truth(truth.ground_truth())
+        if self.args:
+            for arg_name, arg_body in self.args.items():
+                local_truth[arg_name] = Number(arg_body.evaluate(truth))
+        return self.func.evaluate(local_truth)
+
+    def __str__(self):
+        return "{name} {func}".format(name=q(self.name), func=q(self.func))
+
+
+class AssignOperator(Ast):
+    precedence = 10
+
+    def __init__(self):
+        super().__init__()
+        self.name = None
+        self.args = None
+        self.func = None
+
+    def build(self, truth, lnodes, rnodes):
+        assert all([isinstance(n, NameRef) for n in lnodes])
+        self.name = lnodes[0].name
+        self.args = [n.name for n in lnodes[1:]]
+        lnodes.clear()
+        self.func = Function(self.name, self.args, rnodes.pop())
+        truth[self.name] = self.func
+        return self
+
+    def evaluate(self, truth):
+        pass
+
+    def __str__(self):
+        return "{name} := {args} -> {func}".format(name=q(self.name), args=q_arr_str(self.args), func=q(self.func))
 
 
 def build_ast(nodes, truth):
@@ -164,10 +210,10 @@ def build_ast(nodes, truth):
         lnodes = []
         while rnodes:
             n = rnodes.pop()
-            if n.precedence == precedence:
-                n.complete(truth, lnodes, rnodes)
             if precedence < n.precedence < next_precedence:
                 next_precedence = n.precedence
+            elif n.precedence == precedence:
+                n = n.build(truth, lnodes, rnodes)
             lnodes.append(n)
 
     assert len(lnodes) == 1
