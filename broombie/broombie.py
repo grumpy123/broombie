@@ -34,7 +34,8 @@ class Broombie:
             return
         nodes = parse(tokenize(line))
         ast = build_ast(nodes, self.truth)
-        self.latest = self.evaluate(ast)
+        if ast is not None:
+            self.latest = self.evaluate(ast)
 
     def run(self, text):
         for line in text.splitlines():

@@ -187,10 +187,10 @@ class AssignOperator(Ast):
         lnodes.clear()
         self.func = Function(self.name, self.args, rnodes.pop())
         truth[self.name] = self.func
-        return self
+        return None
 
     def evaluate(self, truth):
-        pass
+        raise BroombieInternalError("Assignment object is not (expected to be) callable.")
 
     def __str__(self):
         return "{name} := {args} -> {func}".format(name=q(self.name), args=q_arr_str(self.args), func=q(self.func))
@@ -214,7 +214,7 @@ def build_ast(nodes, truth):
                 next_precedence = n.precedence
             elif n.precedence == precedence:
                 n = n.build(truth, lnodes, rnodes)
-            lnodes.append(n)
+            if n is not None:
+                lnodes.append(n)
 
-    assert len(lnodes) == 1
-    return lnodes.pop()
+    return lnodes.pop() if lnodes else None
