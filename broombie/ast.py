@@ -128,23 +128,18 @@ class NameRef(Ast):
         return self.name
 
 
-class Function(Ast):
+class Function:
     def __init__(self, name, arg_names, body):
-        super().__init__()
         self.name = name
         self.arg_names = arg_names
         self.body = body
 
-    def evaluate(self, truth):
-        """
-        :param truth: Truth object containing values for all args in arg_names
-        :return:
-        """
-        return self.body.evaluate(truth)
-
     def __str__(self):
         args_str = "".join([" " + a for a in self.arg_names])
-        return "{name}{args} = {body}".format(name=q(self.name), args=q(args_str), body=q(self.body))
+        return "{name}{args}".format(name=q(self.name), args=q(args_str))
+
+    def __repr__(self):
+        return "<Function:{self}>".format(self=self)
 
 
 class FunctionCall(Ast):
@@ -167,11 +162,15 @@ class FunctionCall(Ast):
         return self
 
     def evaluate(self, truth):
+        """Override of evaluate method. See notes on arguments.
+        :param truth: Truth object containing values for all args in arg_names
+        :return: Function result
+        """
         local_truth = Truth(truth.ground_truth())
         if self.args:
             for arg_name, arg_body in self.args.items():
                 local_truth[arg_name] = Number(arg_body.evaluate(truth))
-        return self.func.evaluate(local_truth)
+        return self.func.body.evaluate(local_truth)
 
     def __str__(self):
         return "{name} {func}".format(name=q(self.name), func=q(self.func))
