@@ -15,7 +15,7 @@ There will be something in the syntax to differentiate between function call and
 todo: support operator precedence
 
 """
-from .ast import build_ast
+from .ast.builder import build_ast
 from .parser import parse
 from .tokenizer import tokenize
 from .truth import Truth

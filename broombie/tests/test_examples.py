@@ -1,5 +1,6 @@
 from inspect import cleandoc
 
+from broombie.ast.types import Number
 from broombie.broombie import run
 
 
@@ -52,5 +53,7 @@ def test_functions():
     """)
 
 
-def _run(result, program):
-    assert run(cleandoc(program)) == result
+def _run(expected_result, program):
+    result = run(cleandoc(program))
+    assert type(result) == Number
+    assert result.value == expected_result

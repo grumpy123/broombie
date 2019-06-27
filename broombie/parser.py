@@ -1,4 +1,6 @@
-from .ast import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, AssignOperator, Number, RefPlaceholder
+from .ast.function import RefPlaceholder, AssignOperator
+from .ast.operators import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator
+from .ast.types import Number
 from .errors import BroombieParseError
 
 
