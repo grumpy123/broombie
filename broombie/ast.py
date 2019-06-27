@@ -105,11 +105,7 @@ class RefPlaceholder(Ast):
             # l-value, nothing to do
             return NameRef(self.name)
 
-        func = truth[self.name]
-        args = {}
-        for a in func.arg_names:
-            args[a] = rnodes.pop()
-        return FunctionCall(self.name, func, args)
+        return FunctionCall(self.name)
 
     def evaluate(self, truth):
         raise BroombieInternalError("Placeholder object is not (expected to be) callable.")
@@ -152,13 +148,23 @@ class Function(Ast):
 
 
 class FunctionCall(Ast):
-    precedence = 1
+    precedence = 2
 
-    def __init__(self, name, func, args):
+    def __init__(self, name):
         super().__init__()
         self.name = name
-        self.func = func
-        self.args = args
+        self.func = None
+        self.args = None
+
+    def build(self, truth, lnodes, rnodes):
+        if self.name not in truth:
+            raise BroombieInternalError("Expected to only get here if the function is defined.")
+
+        self.func = truth[self.name]
+        self.args = {}
+        for a in self.func.arg_names:
+            self.args[a] = rnodes.pop()
+        return self
 
     def evaluate(self, truth):
         local_truth = Truth(truth.ground_truth())
@@ -210,10 +216,15 @@ def build_ast(nodes, truth):
         lnodes = []
         while rnodes:
             n = rnodes.pop()
-            if precedence < n.precedence < next_precedence:
-                next_precedence = n.precedence
-            elif n.precedence == precedence:
-                n = n.build(truth, lnodes, rnodes)
+            if n.precedence >= precedence:
+                if n.precedence == precedence:
+                    n = n.build(truth, lnodes, rnodes)
+                if n is not None:
+                    if n.precedence < precedence:
+                        raise BroombieInternalError(
+                            "build returned {n} with low precedence, which was already processed.".format(n=n))
+                    if precedence < n.precedence < next_precedence:
+                        next_precedence = n.precedence
             if n is not None:
                 lnodes.append(n)
 

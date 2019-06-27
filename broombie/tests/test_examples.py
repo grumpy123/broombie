@@ -44,6 +44,12 @@ def test_functions():
         g x = f 1 + x
         f 2 + g 1
     """)
+    _run(7, """
+        f x = 2 * x
+        g x = f x + 1
+        h x y = f x + g y
+        h 2 1
+    """)
 
 
 def _run(result, program):
