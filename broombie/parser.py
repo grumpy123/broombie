@@ -4,7 +4,7 @@ from .errors import BroombieParseError
 
 class AstParser:
     def try_parse(self, token):
-        return None
+        raise NotImplementedError()
 
 
 class KeywordParser(AstParser):
@@ -16,31 +16,6 @@ class KeywordParser(AstParser):
         if token == self.token:
             return self.key_type()
         return None
-
-
-class AddOperatorParser(KeywordParser):
-    def __init__(self):
-        super().__init__("+", AddOperator)
-
-
-class SubtractOperatorParser(KeywordParser):
-    def __init__(self):
-        super().__init__("-", SubtractOperator)
-
-
-class MultiplyOperatorParser(KeywordParser):
-    def __init__(self):
-        super().__init__("*", MultiplyOperator)
-
-
-class DivideOperatorParser(KeywordParser):
-    def __init__(self):
-        super().__init__("/", DivideOperator)
-
-
-class AssignOperatorParser(KeywordParser):
-    def __init__(self):
-        super().__init__("=", AssignOperator)
 
 
 class NumberParser(AstParser):
@@ -59,8 +34,15 @@ class RefParser(AstParser):
         return None
 
 
-elements = [AddOperatorParser(), SubtractOperatorParser(), MultiplyOperatorParser(), DivideOperatorParser(),
-            AssignOperatorParser(), NumberParser(), RefParser()]
+elements = [
+    KeywordParser("+", AddOperator),
+    KeywordParser("-", SubtractOperator),
+    KeywordParser("*", MultiplyOperator),
+    KeywordParser("/", DivideOperator),
+    KeywordParser("=", AssignOperator),
+    NumberParser(),
+    RefParser()
+]
 
 
 def parse_token(t):
