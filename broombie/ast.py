@@ -203,6 +203,15 @@ class AssignOperator(Ast):
 
 def build_ast(nodes, truth):
     """Converts list of typed nodes into AST.
+
+    It works in rounds, based on operator precedence and executed in order of the precedence. In each round it builds
+    nodes of a given precedence, from left to right. Each node being built can:
+    1. Consume any number of nodes from the left or right.
+    2. (not used yet) Push new nodes to the left or right.
+    3. Replace itself with a new node.
+
+    Note: care must be given to create new nodes with precedence higher than currently being processed. We build each
+    precedence exactly once, so a new node with lower precedence will never be procesed.
     """
     # todo: error handling
     TERMINATOR = 1000
