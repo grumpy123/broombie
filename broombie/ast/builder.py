@@ -1,4 +1,4 @@
-from broombie.errors import BroombieInternalError
+from broombie.errors import BroombieInternalError, BroombieInvalidProgramError
 
 
 def build_ast(nodes, truth):
@@ -36,4 +36,9 @@ def build_ast(nodes, truth):
             if n is not None:
                 lnodes.append(n)
 
-    return lnodes.pop() if lnodes else None
+    if not lnodes:
+        return None
+
+    if len(lnodes) > 1:
+        raise BroombieInvalidProgramError("Invalid program, too many results.")
+    return lnodes.pop()

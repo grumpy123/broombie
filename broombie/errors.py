@@ -33,3 +33,7 @@ class BroombieOperationNotSupportedError(BroombieError):
         self.operation = operation
         self.value1 = value1
         self.value2 = value2
+
+
+class BroombieInvalidProgramError(BroombieError):
+    pass
