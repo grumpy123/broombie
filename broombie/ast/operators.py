@@ -46,3 +46,48 @@ class MultiplyOperator(BinaryOperator):
 class DivideOperator(BinaryOperator):
     precedence = 3
     operator = Operator.Divide
+
+
+class EqualOperator(BinaryOperator):
+    precedence = 9
+    operator = Operator.Equal
+
+
+class DifferentOperator(BinaryOperator):
+    precedence = 9
+    operator = Operator.Different
+
+
+class LessOperator(BinaryOperator):
+    precedence = 9
+    operator = Operator.Less
+
+
+class LessOrEqualOperator(BinaryOperator):
+    precedence = 9
+    operator = Operator.LessOrEqual
+
+
+class GreaterOperator(BinaryOperator):
+    precedence = 9
+    operator = Operator.Greater
+
+
+class GreaterOrEqualOperator(BinaryOperator):
+    precedence = 9
+    operator = Operator.GreaterOrEqual
+
+
+class AndOperator(BinaryOperator):
+    precedence = 15
+    operator = Operator.And
+
+
+class OrOperator(BinaryOperator):
+    precedence = 18
+    operator = Operator.Or
+
+
+class XorOperator(BinaryOperator):
+    precedence = 12
+    operator = Operator.Xor

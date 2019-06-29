@@ -23,3 +23,8 @@ class Value(Ast):
 class Number(Value):
     precedence = 0
     value_type = int
+
+
+class Bool(Value):
+    precedence = 0
+    value_type = bool

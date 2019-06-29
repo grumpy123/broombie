@@ -1,6 +1,8 @@
 from .ast.function import RefPlaceholder, AssignOperator
-from .ast.operators import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator
-from .ast.types import Number
+from .ast.operators import AddOperator, SubtractOperator, MultiplyOperator, DivideOperator, \
+    EqualOperator, DifferentOperator, LessOperator, LessOrEqualOperator, GreaterOperator, GreaterOrEqualOperator, \
+    AndOperator, OrOperator, XorOperator
+from .ast.types import Number, Bool
 from .errors import BroombieParseError
 
 
@@ -33,6 +35,15 @@ class NumberParser(AstParser):
             return None
 
 
+class BoolParser(AstParser):
+    def try_parse(self, token):
+        if token == "true":
+            return Bool(True)
+        if token == "false":
+            return Bool(False)
+        return None
+
+
 class RefParser(AstParser):
     def try_parse(self, token):
         if token.isalpha():
@@ -45,7 +56,19 @@ elements = [
     KeywordParser.for_operator(SubtractOperator),
     KeywordParser.for_operator(MultiplyOperator),
     KeywordParser.for_operator(DivideOperator),
+
+    KeywordParser.for_operator(EqualOperator),
+    KeywordParser.for_operator(DifferentOperator),
+    KeywordParser.for_operator(LessOperator),
+    KeywordParser.for_operator(LessOrEqualOperator),
+    KeywordParser.for_operator(GreaterOperator),
+    KeywordParser.for_operator(GreaterOrEqualOperator),
+
+    KeywordParser.for_operator(AndOperator),
+    KeywordParser.for_operator(OrOperator),
+    KeywordParser.for_operator(XorOperator),
     KeywordParser("=", AssignOperator),
+    BoolParser(),
     NumberParser(),
     RefParser()
 ]
