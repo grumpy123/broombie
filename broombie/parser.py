@@ -14,6 +14,10 @@ class KeywordParser(AstParser):
         self.token = token
         self.key_type = key_type
 
+    @staticmethod
+    def for_operator(operator_type):
+        return KeywordParser(operator_type.operator.value, operator_type)
+
     def try_parse(self, token):
         if token == self.token:
             return self.key_type()
@@ -37,10 +41,10 @@ class RefParser(AstParser):
 
 
 elements = [
-    KeywordParser("+", AddOperator),
-    KeywordParser("-", SubtractOperator),
-    KeywordParser("*", MultiplyOperator),
-    KeywordParser("/", DivideOperator),
+    KeywordParser.for_operator(AddOperator),
+    KeywordParser.for_operator(SubtractOperator),
+    KeywordParser.for_operator(MultiplyOperator),
+    KeywordParser.for_operator(DivideOperator),
     KeywordParser("=", AssignOperator),
     NumberParser(),
     RefParser()
