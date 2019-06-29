@@ -1,16 +1,21 @@
+from enum import Enum
+
 from broombie.ast.types import Number
 from broombie.errors import BroombieOperationNotSupportedError
 
-ADD = "+"
-SUB = "-"
-MUL = "*"
-DIV = "/"
+
+class Operator(Enum):
+    Add = "+"
+    Subtract = "-"
+    Multiply = "*"
+    Divide = "/"
+
 
 arith_operations = {
-    ADD: {Number: lambda a, b: a + b},
-    SUB: {Number: lambda a, b: a - b},
-    MUL: {Number: lambda a, b: a * b},
-    DIV: {Number: lambda a, b: a // b},
+    Operator.Add: {Number: lambda a, b: a + b},
+    Operator.Subtract: {Number: lambda a, b: a - b},
+    Operator.Multiply: {Number: lambda a, b: a * b},
+    Operator.Divide: {Number: lambda a, b: a // b},
 }
 
 

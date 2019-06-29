@@ -1,10 +1,10 @@
-from broombie.runtime.arith import compute, ADD, SUB, MUL, DIV
+from broombie.runtime.arith import compute, Operator
 from .common import Ast, q
 
 
 class BinaryOperator(Ast):
     """Base class for all binary operators."""
-    operation = None
+    operator = None
 
     def __init__(self):
         self.left_child = None
@@ -18,10 +18,10 @@ class BinaryOperator(Ast):
     def evaluate(self, truth):
         left_val = self.left_child.evaluate(truth)
         right_val = self.right_child.evaluate(truth)
-        return compute(self.operation, left_val, right_val)
+        return compute(self.operator, left_val, right_val)
 
     def __str__(self):
-        return "({left} {operation} {right})".format(left=q(self.left_child), operation=q(self.operation),
+        return "({left} {operation} {right})".format(left=q(self.left_child), operation=q(self.operator),
                                                      right=q(self.right_child))
 
 
@@ -30,19 +30,19 @@ class BinaryOperator(Ast):
 
 class AddOperator(BinaryOperator):
     precedence = 6
-    operation = ADD
+    operator = Operator.Add
 
 
 class SubtractOperator(BinaryOperator):
     precedence = 6
-    operation = SUB
+    operator = Operator.Subtract
 
 
 class MultiplyOperator(BinaryOperator):
     precedence = 3
-    operation = MUL
+    operator = Operator.Multiply
 
 
 class DivideOperator(BinaryOperator):
     precedence = 3
-    operation = DIV
+    operator = Operator.Divide
